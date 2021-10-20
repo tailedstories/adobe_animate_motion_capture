@@ -285,14 +285,14 @@ def IK(target, angle, link, max_iter = 10000, err_min = 0.1,p_x=0.0,p_y=0.0):
 
 def my_xml_handler(my_symbolName="filename",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=[],sl_arr=[]):
     global myframerate
-    my_symbolName = "Stickman_Elbow_Far" 
+    
     my_symbolRotation = "0"
     my_scaleY="1" 
     my_scaleX="1" 
     #my_y="1.7" 
     #my_x="-1.5"
     #print(myframerate)
-    exit
+    
     
     ##############
     # XML Header #
@@ -370,6 +370,7 @@ def my_xml_handler(my_symbolName="filename",my_y=0,my_x=0,my_y_transform="0.5",m
     # Save File
     tree = etree.ElementTree(root)
     tree.write(my_symbolName + ".xml")
+
 
 
 
@@ -1484,12 +1485,6 @@ if False:
 # Save to File #
 ################
 
-# Clean up existing files
-if os.path.exists("frontflip.csv"):
-    os.remove("frontflip.csv") 
-
-
-
 '''
 int(my_arr_NearElbow[x]),
 my_arr_NearShoulder[x],
@@ -1507,11 +1502,18 @@ int(my_arr_BodyRot[x])
 
 if send_360 == True:
     
-    my_xml_handler(my_symbolName="filename",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_NearElbow,sl_arr=sl_arr)
-    #my_xml_handler()
+    my_xml_handler(my_symbolName="elbow_far",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_NearElbow,sl_arr=sl_arr)
+    
     
     
 else:
+    
+    # Clean up existing files
+    if os.path.exists("frontflip.csv"):
+        os.remove("frontflip.csv") 
+    
+    
+
     ###############
     # Save to CSV #
     ###############
