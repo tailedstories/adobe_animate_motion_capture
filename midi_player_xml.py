@@ -27,10 +27,11 @@ my_width  = 1280
 # send midi while playing
 send_midi_bool = False
 # display joints
-display_bool = True
+display_bool = False
 # true will save values in 0 to 360 range
 send_360 = True
 my_delay = 0.02
+global myframerate
 myframerate = 30
 
             ###############
@@ -278,6 +279,100 @@ def IK(target, angle, link, max_iter = 10000, err_min = 0.1,p_x=0.0,p_y=0.0):
         if solved:
             break
     return angle, err_end_to_target, solved, loop
+
+
+
+
+def my_xml_handler(my_symbolName="filename",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=[],sl_arr=[]):
+    global myframerate
+    my_symbolName = "Stickman_Elbow_Far" 
+    my_symbolRotation = "0"
+    my_scaleY="1" 
+    my_scaleX="1" 
+    #my_y="1.7" 
+    #my_x="-1.5"
+    #print(myframerate)
+    exit
+    
+    ##############
+    # XML Header #
+    ##############
+    total_frame = 0
+    yepframe = 0
+    for x in range(len(sl_arr)):
+        if float(sl_arr[x])-yepframe >= 1000/myframerate*2.0: 
+            total_frame +=2
+            yepframe = float(sl_arr[x])
+    
+    from lxml import etree
+    nsmap = {"filters": "flash.filters.*",
+             "geom": "flash.geom.*",
+             None: "fl.motion.*"}
+    root = etree.Element("Motion",nsmap=nsmap)
+    root.attrib["duration"] = str(total_frame) #"204" #str(len(sl_arr))
+    d_source = etree.SubElement(root, "source")
+    d_source_2 = etree.SubElement(d_source, "Source")
+    
+    
+    d_source_2.attrib["symbolName"] = my_symbolName
+    d_source_2.attrib["elementType"] = "movie clip"
+    d_source_2.attrib["rotation"] = my_symbolRotation
+    d_source_2.attrib["scaleY"] = my_scaleY
+    d_source_2.attrib["scaleX"] = my_scaleX
+    d_source_2.attrib["y"] = str(my_y)
+    d_source_2.attrib["x"] = str(my_x)
+    d_source_2.attrib["frameRate"] = str(myframerate)
+    
+    d_source_3_1 = etree.SubElement(d_source_2, "dimensions")
+    
+    MY_NAMESPACES={'geom': 'Rectangle'}
+    e=etree.Element('{%s}Rectangle' % MY_NAMESPACES['geom'], nsmap=MY_NAMESPACES)
+    e.attrib["height"] = my_height
+    e.attrib["width"] = my_width
+    e.attrib["top"] = my_top
+    e.attrib["left"] = my_left
+    e.attrib["rotation"] = "0.0"
+    
+    d_source_3_1.append(e)
+    
+    d_source_3_2 = etree.SubElement(d_source_2, "transformationPoint")
+    
+    MY_NAMESPACES={'geom': 'Point'}
+    e=etree.Element('{%s}Point' % MY_NAMESPACES['geom'], nsmap=MY_NAMESPACES)
+    e.attrib["y"] = my_y_transform
+    e.attrib["x"] = my_x_transform
+    
+    
+    d_source_3_2.append(e)
+    
+    #################
+    # Add Keyframes #
+    #################
+    
+    index_frame = 2
+    yepframe = 0
+    for x in range(len(sl_arr)):
+        if float(sl_arr[x])-yepframe >= 1000/myframerate*2.0: 
+            d_key = etree.SubElement(root, "Keyframe")
+            d_key.attrib["index"] = str(round(index_frame,2))
+            d_key.attrib["loop"] = "single frame"
+            d_key.attrib["firstFrame"] = "1"
+            d_key.attrib["x"] = "0.0"
+            d_key.attrib["y"] = "0.0"
+            d_key.attrib["rotation"] = str(round(my_arr[x],2))
+            index_frame += 2
+            yepframe = float(sl_arr[x])
+  
+    
+    # Clean up existing files
+    if os.path.exists(my_symbolName + ".xml"):
+        os.remove(my_symbolName + ".xml") 
+    # Save File
+    tree = etree.ElementTree(root)
+    tree.write(my_symbolName + ".xml")
+
+
+
 
 ##################
 # Init variables #
@@ -1412,160 +1507,9 @@ int(my_arr_BodyRot[x])
 
 if send_360 == True:
     
-    my_symbolName = "Stickman_Elbow_Far" 
-    my_symbolRotation = "0"
-    my_scaleY="1" 
-    my_scaleX="1" 
-    my_y="1.7" 
-    my_x="-1.5"
+    my_xml_handler(my_symbolName="filename",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_NearElbow,sl_arr=sl_arr)
+    #my_xml_handler()
     
-    my_y_transform= "0.5"
-    my_x_transform="0.08130081300813008"
-    
-    my_height="80"
-    my_width="246"
-    my_top="-40"
-    my_left= "-20"
-    ###############
-    # Save to XML #
-    ###############
-
-    
-    from lxml import etree
-    nsmap = {"filters": "flash.filters.*",
-             "geom": "flash.geom.*",
-             None: "fl.motion.*"}
-    root = etree.Element("Motion",nsmap=nsmap)
-    root.attrib["duration"] = "204" #str(len(sl_arr))
-    d_source = etree.SubElement(root, "source")
-    d_source_2 = etree.SubElement(d_source, "Source")
-    
-    
-    d_source_2.attrib["symbolName"] = my_symbolName
-    d_source_2.attrib["elementType"] = "movie clip"
-    d_source_2.attrib["rotation"] = my_symbolRotation
-    d_source_2.attrib["scaleY"] = my_scaleY
-    d_source_2.attrib["scaleX"] = my_scaleX
-    d_source_2.attrib["y"] = my_y
-    d_source_2.attrib["x"] = my_x
-    d_source_2.attrib["frameRate"] = str(myframerate)
-    
-    
-    '''
-        -<Source symbolName="Bear_Forearm_Far" elementType="graphic" rotation="3.3" scaleY="0.331" scaleX="0.409" y="271.75" x="23.95" frameRate="30">
-        -<dimensions>
-        <geom:Rectangle height="308.6" width="150.05" top="-481.9" left="-107.45"/>
-        </dimensions>
-        -<transformationPoint>
-        <geom:Point y="0.24173687621516513" x="0.6501166277907363"/
-
-    '''
-    
-    
-    d_source_3_1 = etree.SubElement(d_source_2, "dimensions")
-    
-    MY_NAMESPACES={'geom': 'Rectangle'}
-    e=etree.Element('{%s}Rectangle' % MY_NAMESPACES['geom'], nsmap=MY_NAMESPACES)
-    e.attrib["height"] = my_height
-    e.attrib["width"] = my_width
-    e.attrib["top"] = my_top
-    e.attrib["left"] = my_left
-    e.attrib["rotation"] = "0.0"
-    
-    d_source_3_1.append(e)
-    
-    d_source_3_2 = etree.SubElement(d_source_2, "transformationPoint")
-    
-    MY_NAMESPACES={'geom': 'Point'}
-    e=etree.Element('{%s}Point' % MY_NAMESPACES['geom'], nsmap=MY_NAMESPACES)
-    e.attrib["y"] = my_y_transform
-    e.attrib["x"] = my_x_transform
-    
-    
-    d_source_3_2.append(e)
-    
-    #etree.SubElement(d_source, "Source", name="x").text = "2.35"
-    
-    
-    
-    
-    index_frame = 2
-    yepframe = 0
-    for x in range(len(sl_arr)):
-        if float(sl_arr[x])-yepframe >= 1000/myframerate*2.0: 
-        #if (x % 2) != 0:
-            #print(float(sl_arr[x])-yepframe)
-            d_key = etree.SubElement(root, "Keyframe")
-            
-            
-            #d_key.attrib["zDepth"] = "0"
-            d_key.attrib["index"] = str(round(index_frame,2))
-            #d_key.attrib["zDepth"] = "0"
-            #d_key.attrib["loop"] = "play once"
-            #d_key.attrib["firstFrame"] = "1"
-            d_key.attrib["x"] = "0.0"
-            d_key.attrib["y"] = "0.0"
-            
-            #if (x % 2) != 0:
-            #    d_key.attrib["x"] = "0.01"
-            #    d_key.attrib["y"] = "0.01"
-            #else:
-            #    d_key.attrib["x"] = "-0.01"
-            #    d_key.attrib["y"] = "-0.01"
-            
-            #d_key.attrib["scaleX"] = "1"
-            #d_key.attrib["scaleY"] = "1"
-            #d_key.attrib["skewX"] = str(round(my_arr_NearElbow[x],2))
-            #d_key.attrib["skewY"] = str(round(my_arr_NearElbow[x],2))
-            d_key.attrib["rotation"] = str(round(my_arr_NearElbow[x],2))
-            
-            
-            #d_key.attrib["blank"] = "false"
-            index_frame += 2
-            yepframe = float(sl_arr[x])
-    '''    
-    index_frame = 2
-    yepframe = 0
-    for x in range(len(sl_arr)):
-        if float(sl_arr[x])-yepframe >= 1000/myframerate*2.0: 
-        #if (x % 2) != 0:
-            #print(float(sl_arr[x])-yepframe)
-            d_key = etree.SubElement(root, "Keyframe")
-            
-            
-            #d_key.attrib["zDepth"] = "0"
-            d_key.attrib["index"] = str(round(index_frame,2))
-            d_key.attrib["zDepth"] = "0"
-            if (x % 2) != 0:
-                d_key.attrib["x"] = "0.01"
-                d_key.attrib["y"] = "0.01"
-            else:
-                d_key.attrib["x"] = "-0.01"
-                d_key.attrib["y"] = "-0.01"
-            
-            #d_key.attrib["loop"] = "play once"
-            d_key.attrib["firstFrame"] = "0"
-            
-            
-            d_key.attrib["scaleX"] = "1"
-            d_key.attrib["scaleY"] = "1"
-            #d_key.attrib["skewX"] = str(round(my_arr_NearElbow[x],2))
-            #d_key.attrib["skewY"] = str(round(my_arr_NearElbow[x],2))
-            #d_key.attrib["rotation"] = str(round(my_arr_NearElbow[x],2))
-            
-            
-            #d_key.attrib["blank"] = "false"
-            index_frame += 2
-            yepframe = float(sl_arr[x])
-        
-    '''
-    
-    # Clean up existing files
-    if os.path.exists("filename.xml"):
-        os.remove("filename.xml") 
-
-    tree = etree.ElementTree(root)
-    tree.write("filename.xml")
     
 else:
     ###############
@@ -1599,10 +1543,4 @@ else:
 
 if send_midi_bool:            
     midiout.close_port()
-
-
-
-
-
-
 
