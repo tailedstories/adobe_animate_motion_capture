@@ -27,7 +27,7 @@ my_width  = 1280
 # send midi while playing
 send_midi_bool = False
 # display joints
-display_bool = False
+display_bool = True
 # true will save values in 0 to 360 range
 send_360 = True
 my_delay = 0.02
@@ -420,6 +420,7 @@ my_arr_FarKnee = [0]
 my_arr_FarFoot = [0]
 
 my_arr_BodyRot = [0]
+my_arr_BodyTurnaround = [0]
 
 near_elbow_flip_status_b = 2
 near_elbow_flip_status = 3
@@ -814,7 +815,34 @@ with open('points.csv', newline='') as csvfile:
              my_body_rot = my_body_rot_1
              if send_360 == False:
                  my_body_rot = remap(int(my_body_rot), 0, 360, 0, 127)
+                 
+             ###################
+             # Body Turnaround #
+             ####################
+             
+             if abs(float(my_n_shoulder.get("X")) - float(my_f_shoulder.get("X"))) > 0.11:
+                 if float(my_n_shoulder.get("X")) < float(my_f_shoulder.get("X")):
+                     my_body_turn = "Front"
+                 else:
+                     my_body_turn = "Back"
+             elif abs(float(my_n_shoulder.get("X")) - float(my_f_shoulder.get("X"))) <= 0.11 and abs(float(my_n_shoulder.get("X")) - float(my_f_shoulder.get("X"))) > 0.07:
+                 if float(my_n_shoulder.get("Z")) > float(my_f_shoulder.get("Z")):
+                     if float(my_n_shoulder.get("X")) < float(my_f_shoulder.get("X")):
+                         my_body_turn = "<3QT_f"
+                     else:
+                         my_body_turn = "<3QT_b"
+                 else:
+                     if float(my_n_shoulder.get("X")) < float(my_f_shoulder.get("X")):
+                         my_body_turn = ">3QT_f"
+                     else:
+                         my_body_turn = ">3QT_b"
+             else:
+                 if float(my_n_shoulder.get("Z")) > float(my_f_shoulder.get("Z")):
+                     my_body_turn = "Left"
+                 else:
+                     my_body_turn = "Right"
                 
+             
              ##################
              # Display Joints #
              ##################
@@ -881,6 +909,8 @@ with open('points.csv', newline='') as csvfile:
                  
 
                  # Draw Midi Values
+                 min_y2 = min_y  
+                 min_y = 0.8
                  # near
                  i=0
                  if True:
@@ -930,7 +960,9 @@ with open('points.csv', newline='') as csvfile:
                  
                  image = cv2.putText(image, "Rotation : " + str(int(my_body_rot)), (900,int(my_height*(min_y+0.05))), cv2.FONT_HERSHEY_DUPLEX, 1.3, (50,0,255), 2, cv2.LINE_AA)
                  
+                 image = cv2.putText(image, "Body Turn : " + str(my_body_turn), (800,int(my_height*(min_y+0.1))), cv2.FONT_HERSHEY_DUPLEX, 1.3, (50,0,255), 2, cv2.LINE_AA)
                  
+                 min_y = min_y2  
                  # show image
                  cv2.imshow('MediaPipe Holistic', image)
                  
@@ -1160,7 +1192,7 @@ with open('points.csv', newline='') as csvfile:
              my_arr_FarFoot.append(foot_f_status)         
              
              my_arr_BodyRot.append(my_body_rot)
-             
+             my_arr_BodyTurnaround.append(my_body_turn)
              
              sl_arr.append(row[55])
              #if len(sl_arr) > 1:
@@ -1502,9 +1534,20 @@ int(my_arr_BodyRot[x])
 
 if send_360 == True:
     
-    my_xml_handler(my_symbolName="elbow_far",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_NearElbow,sl_arr=sl_arr)
+    #my_xml_handler(my_symbolName="wrist_far",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_NearElbow,sl_arr=sl_arr)
+    my_xml_handler(my_symbolName="elbow_far",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_FarElbow,sl_arr=sl_arr)
+    my_xml_handler(my_symbolName="shoulder_far",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_FarShoulder,sl_arr=sl_arr)
+    my_xml_handler(my_symbolName="hip_far",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_FarHip,sl_arr=sl_arr)
+    my_xml_handler(my_symbolName="knee_far",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_FarKnee,sl_arr=sl_arr)
+    
+    #my_xml_handler(my_symbolName="wrist_near",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_NearElbow,sl_arr=sl_arr)
+    my_xml_handler(my_symbolName="elbow_near",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_NearElbow,sl_arr=sl_arr)
+    my_xml_handler(my_symbolName="shoulder_near",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_NearShoulder,sl_arr=sl_arr)
+    my_xml_handler(my_symbolName="hip_near",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_NearHip,sl_arr=sl_arr)
+    my_xml_handler(my_symbolName="knee_near",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_NearKnee,sl_arr=sl_arr)
     
     
+    my_xml_handler(my_symbolName="body_rotation",my_y=0,my_x=0,my_y_transform="0.5",my_x_transform="0.5",my_height="80",my_width="246",my_top="-40",my_left= "-20",my_arr=my_arr_BodyRot,sl_arr=sl_arr)
     
 else:
     
@@ -1546,3 +1589,187 @@ else:
 if send_midi_bool:            
     midiout.close_port()
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+
+    my_symbolName = "Stickman_Elbow_Far" 
+    my_symbolRotation = "0"
+    my_scaleY="1" 
+    my_scaleX="1" 
+    my_y="1.7" 
+    my_x="-1.5"
+    
+    my_y_transform= "0.5"
+    my_x_transform="0.08130081300813008"
+    
+    my_height="80"
+    my_width="246"
+    my_top="-40"
+    my_left= "-20"
+    ###############
+    # Save to XML #
+    ###############
+    total_frame = 0
+    yepframe = 0
+    for x in range(len(sl_arr)):
+        if float(sl_arr[x])-yepframe >= 1000/myframerate*2.0: 
+            total_frame +=2
+            yepframe = float(sl_arr[x])
+    
+    from lxml import etree
+    nsmap = {"filters": "flash.filters.*",
+             "geom": "flash.geom.*",
+             None: "fl.motion.*"}
+    root = etree.Element("Motion",nsmap=nsmap)
+    root.attrib["duration"] = str(total_frame) #"204" #str(len(sl_arr))
+    d_source = etree.SubElement(root, "source")
+    d_source_2 = etree.SubElement(d_source, "Source")
+    
+    
+    d_source_2.attrib["symbolName"] = my_symbolName
+    d_source_2.attrib["elementType"] = "movie clip"
+    d_source_2.attrib["rotation"] = my_symbolRotation
+    d_source_2.attrib["scaleY"] = my_scaleY
+    d_source_2.attrib["scaleX"] = my_scaleX
+    d_source_2.attrib["y"] = my_y
+    d_source_2.attrib["x"] = my_x
+    d_source_2.attrib["frameRate"] = str(myframerate)
+    
+    
+    
+    #    -<Source symbolName="Bear_Forearm_Far" elementType="graphic" rotation="3.3" scaleY="0.331" scaleX="0.409" y="271.75" x="23.95" frameRate="30">
+    #    -<dimensions>
+    #    <geom:Rectangle height="308.6" width="150.05" top="-481.9" left="-107.45"/>
+    #    </dimensions>
+    #    -<transformationPoint>
+    #    <geom:Point y="0.24173687621516513" x="0.6501166277907363"/
+
+    
+    
+    d_source_3_1 = etree.SubElement(d_source_2, "dimensions")
+    
+    MY_NAMESPACES={'geom': 'Rectangle'}
+    e=etree.Element('{%s}Rectangle' % MY_NAMESPACES['geom'], nsmap=MY_NAMESPACES)
+    e.attrib["height"] = my_height
+    e.attrib["width"] = my_width
+    e.attrib["top"] = my_top
+    e.attrib["left"] = my_left
+    e.attrib["rotation"] = "0.0"
+    
+    d_source_3_1.append(e)
+    
+    d_source_3_2 = etree.SubElement(d_source_2, "transformationPoint")
+    
+    MY_NAMESPACES={'geom': 'Point'}
+    e=etree.Element('{%s}Point' % MY_NAMESPACES['geom'], nsmap=MY_NAMESPACES)
+    e.attrib["y"] = my_y_transform
+    e.attrib["x"] = my_x_transform
+    
+    
+    d_source_3_2.append(e)
+    
+    #etree.SubElement(d_source, "Source", name="x").text = "2.35"
+    
+    
+    
+    index_frame = 2
+    yepframe = 0
+    for x in range(len(sl_arr)):
+        if float(sl_arr[x])-yepframe >= 1000/myframerate*2.0: 
+        #if (x % 2) != 0:
+            #print(float(sl_arr[x])-yepframe)
+            d_key = etree.SubElement(root, "Keyframe")
+            
+            
+            #d_key.attrib["zDepth"] = "0"
+            d_key.attrib["index"] = str(round(index_frame,2))
+            #d_key.attrib["zDepth"] = "0"
+            #d_key.attrib["loop"] = "play once"
+            #d_key.attrib["firstFrame"] = "1"
+            d_key.attrib["x"] = "0.0"
+            d_key.attrib["y"] = "0.0"
+            
+            #if (x % 2) != 0:
+            #    d_key.attrib["x"] = "0.01"
+            #    d_key.attrib["y"] = "0.01"
+            #else:
+            #    d_key.attrib["x"] = "-0.01"
+            #    d_key.attrib["y"] = "-0.01"
+            
+            #d_key.attrib["scaleX"] = "1"
+            #d_key.attrib["scaleY"] = "1"
+            #d_key.attrib["skewX"] = str(round(my_arr_NearElbow[x],2))
+            #d_key.attrib["skewY"] = str(round(my_arr_NearElbow[x],2))
+            d_key.attrib["rotation"] = str(round(my_arr_NearElbow[x],2))
+            
+            
+            #d_key.attrib["blank"] = "false"
+            index_frame += 2
+            yepframe = float(sl_arr[x])
+     
+    #index_frame = 2
+    #yepframe = 0
+    #for x in range(len(sl_arr)):
+    #    if float(sl_arr[x])-yepframe >= 1000/myframerate*2.0: 
+    #    #if (x % 2) != 0:
+    #        #print(float(sl_arr[x])-yepframe)
+    #        d_key = etree.SubElement(root, "Keyframe")
+    #        
+    #        
+    #        #d_key.attrib["zDepth"] = "0"
+    #        d_key.attrib["index"] = str(round(index_frame,2))
+    #        d_key.attrib["zDepth"] = "0"
+    #        if (x % 2) != 0:
+    #            d_key.attrib["x"] = "0.01"
+    #            d_key.attrib["y"] = "0.01"
+    #        else:
+    #            d_key.attrib["x"] = "-0.01"
+    #            d_key.attrib["y"] = "-0.01"
+    #        
+    #        #d_key.attrib["loop"] = "play once"
+    #        d_key.attrib["firstFrame"] = "0"
+    #        
+    #        
+    #        d_key.attrib["scaleX"] = "1"
+    #        d_key.attrib["scaleY"] = "1"
+    #        #d_key.attrib["skewX"] = str(round(my_arr_NearElbow[x],2))
+    #        #d_key.attrib["skewY"] = str(round(my_arr_NearElbow[x],2))
+    #        #d_key.attrib["rotation"] = str(round(my_arr_NearElbow[x],2))
+    #        
+    #        
+    #        #d_key.attrib["blank"] = "false"
+    #        index_frame += 2
+    #        yepframe = float(sl_arr[x])
+        
+    
+    
+    # Clean up existing files
+    if os.path.exists("filename.xml"):
+        os.remove("filename.xml") 
+
+    tree = etree.ElementTree(root)
+    tree.write("filename.xml")
+'''
